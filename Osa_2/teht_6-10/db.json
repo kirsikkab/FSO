@@ -21,19 +21,19 @@
       "id": "4"
     },
     {
-      "name": "Kuka Muukaan",
-      "number": "125849",
-      "id": "HRD0KAIFUfk"
+      "name": "Anna Juuri",
+      "number": "12121212",
+      "id": "8L4tmHuan04"
     },
     {
-      "name": "Kuka Ties",
-      "number": "0415656566",
-      "id": "sd9Sq7JDVKY"
+      "name": "Mikki Hiiri",
+      "number": "012121212",
+      "id": "TXdNgcyL5As"
     },
     {
-      "name": "Ville Vallaton",
-      "number": "148951",
-      "id": "CCuq4H7bFr4"
+      "name": "Minni Hiiri",
+      "number": "1212",
+      "id": "raVFnUG3ijo"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

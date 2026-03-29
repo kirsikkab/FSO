@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
 import phonebookService from './services/phonebook'
+import Notification from './components/Notification'
 
 const App = () => {
   const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
+  const [notification, setNotification] = useState(null)
 
   useEffect(() => {
   phonebookService
@@ -30,15 +31,48 @@ const App = () => {
   setFilter(event.target.value)
   }
 
+  const showMessage = (message, type = 'success') => {
+    setNotification({ message, type })
+    setTimeout(() => {
+      setNotification(null)
+    }, 3000)
+  }
+
   const addPerson = (event) => {
     event.preventDefault()
 
-    const nameExists = persons.some(
-    person => person.name.toLowerCase() === newName.toLowerCase()
+    const existingPerson = persons.find(
+      person => person.name.toLowerCase() === newName.toLowerCase()
     )
 
-    if (nameExists) {
-      alert(`${newName} is already in the phonebook`)
+    if (existingPerson) {
+      const confirmReplace = window.confirm(
+        `${existingPerson.name} is already in the phonebook. Replace the old number with a new one?`
+      )
+
+      if (!confirmReplace) {
+        return
+      }
+
+      const updatedPerson = {
+        ...existingPerson,
+        number: newNumber
+      }
+
+      phonebookService
+        .update(existingPerson.id, updatedPerson)
+        .then(returnedPerson => {
+          setPersons(
+            persons.map(p =>
+              p.id !== existingPerson.id ? p : returnedPerson
+            )
+          )
+          setNewName('')
+          setNewNumber('')
+
+          showMessage(`${returnedPerson.name}'s phonenumber was updated`, 'success')
+        })
+
       return
     }
 
@@ -48,12 +82,15 @@ const App = () => {
     }
 
     phonebookService
-    .create(personObject).then(returnedPerson => {
-      setPersons(persons.concat(returnedPerson))
-      setNewName('')
-      setNewNumber('')
-    })
-  }
+      .create(personObject)
+      .then(returnedPerson => {
+        setPersons(persons.concat(returnedPerson))
+        setNewName('')
+        setNewNumber('')
+
+        showMessage(`Added ${returnedPerson.name}`, 'success')
+      })
+}
 
   const handleDelete = (id) => {
     const person = persons.find(p => p.id === id)
@@ -68,9 +105,14 @@ const App = () => {
       .deletePerson(id)
       .then(() => {
         setPersons(persons.filter(p => p.id !== id))
+
+        showMessage(`Deleted ${person.name} successfully`, 'success')
       })
       .catch(error => {
-        alert(`${person.name} has already been removed from server`)
+        showMessage(
+          `${person.name} has already been removed from server`,
+          'error'
+        )
         setPersons(persons.filter(p => p.id !== id))
       })
   }
@@ -82,6 +124,7 @@ const App = () => {
   return (
   <div>
     <h2>Phonebook</h2>
+    <Notification notification={notification} />
 
     <Filter 
       filter={filter} 
