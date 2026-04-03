@@ -1,0 +1,13 @@
+{
+  "name": "teht_1-6",
+  "version": "1.0.0",
+  "description": "teht1-6",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "KB",
+  "license": "ISC"
+}
