@@ -1,5 +1,6 @@
 const express = require('express')
 const app = express()
+app.use(express.json())
 
 
 let persons = [
@@ -25,11 +26,12 @@ let persons = [
   }
 ]
 
-
+//kaikkien tietojen haku
 app.get('/api/persons', (request, response) => {
   response.json(persons)
 })
 
+//info-sivu
 app.get('/info', (request, response) => {
   const count = persons.length
   const date = new Date()
@@ -40,6 +42,7 @@ app.get('/info', (request, response) => {
   `)
 })
 
+//yhden tiedon haku
 app.get('/api/persons/:id', (request, response) => {
   const id = request.params.id
   const person = persons.find(p => p.id === id)
@@ -48,6 +51,45 @@ app.get('/api/persons/:id', (request, response) => {
   } else {
     response.status(404).end()
   }
+})
+
+// tiedon poisto
+app.delete('/api/persons/:id', (request, response) => {
+  const id = request.params.id
+  persons = persons.filter(person => person.id !== id)
+
+  response.status(204).end()
+})
+
+// tiedon lisääminen
+app.post('/api/persons', (request, response) => {
+  const body = request.body
+
+  // puuttuva nimi tai numero
+  if (!body.name || !body.number) {
+    return response.status(400).json({
+      error: 'name or number missing'
+    })
+  }
+
+  // nimi jo luettelossa
+  const nameExists = persons.some(person => person.name === body.name)
+
+  if (nameExists) {
+    return response.status(400).json({
+      error: 'name must be unique'
+    })
+  }
+
+  const newPerson = {
+    id: Math.floor(Math.random() * 1000000).toString(),
+    name: body.name,
+    number: body.number
+  }
+
+  persons = persons.concat(newPerson)
+
+  response.json(newPerson)
 })
 
 const PORT = 3001
