@@ -96,6 +96,30 @@ app.post('/api/persons', (request, response, next) => {
     .catch(error => next(error))
 })
 
+// tiedon päivittäminen
+app.put('/api/persons/:id', (request, response, next) => {
+  const { name, number } = request.body
+
+  const updatedPerson = {
+    name: name,
+    number: number
+  }
+
+  Person.findByIdAndUpdate(
+    request.params.id,
+    updatedPerson,
+    { new: true, runValidators: true, context: 'query' }
+  )
+    .then(person => {
+      if (person) {
+        response.json(person)
+      } else {
+        response.status(404).end()
+      }
+    })
+    .catch(error => next(error))
+})
+
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
 }
