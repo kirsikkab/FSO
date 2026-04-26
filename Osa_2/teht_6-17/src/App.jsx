@@ -82,17 +82,17 @@ const App = () => {
     }
 
     phonebookService
-    .create(personObject)
-    .then(returnedPerson => {
-      setPersons(persons.concat(returnedPerson))
-      setNewName('')
-      setNewNumber('')
+      .create(personObject)
+      .then(returnedPerson => {
+        setPersons(persons.concat(returnedPerson))
+        setNewName('')
+        setNewNumber('')
 
-      showMessage(`Added ${returnedPerson.name}`, 'success')
-    })
-    .catch(error => {
-      showMessage(error.response.data.error, 'error')
-    })
+        showMessage(`Added ${returnedPerson.name}`, 'success')
+      })
+      .catch(error => {
+        showMessage(error.response.data.error, 'error')
+      })
 }
 
   const handleDelete = (id) => {
