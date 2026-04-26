@@ -72,6 +72,11 @@ const App = () => {
 
           showMessage(`${returnedPerson.name}'s phonenumber was updated`, 'success')
         })
+        .catch(error => {
+          const errorMessage =
+            error.response?.data?.error || 'Something went wrong'
+          showMessage(errorMessage, 'error')
+        })
 
       return
     }
@@ -84,14 +89,16 @@ const App = () => {
     phonebookService
       .create(personObject)
       .then(returnedPerson => {
-        setPersons(persons.concat(returnedPerson))
+        setPersons(prev => prev.concat(returnedPerson))
         setNewName('')
         setNewNumber('')
 
         showMessage(`Added ${returnedPerson.name}`, 'success')
       })
       .catch(error => {
-        showMessage(error.response.data.error, 'error')
+        const errorMessage =
+          error.response?.data?.error || 'Something went wrong'
+        showMessage(errorMessage, 'error')
       })
 }
 
@@ -105,19 +112,24 @@ const App = () => {
     }
 
     phonebookService
-      .deletePerson(id)
-      .then(() => {
-        setPersons(persons.filter(p => p.id !== id))
+    .deletePerson(id)
+    .then(() => {
+      setPersons(prevPersons =>
+        prevPersons.filter(p => p.id !== id)
+      )
 
-        showMessage(`Deleted ${person.name} successfully`, 'success')
-      })
-      .catch(error => {
-        showMessage(
-          `${person.name} has already been removed from server`,
-          'error'
-        )
-        setPersons(persons.filter(p => p.id !== id))
-      })
+      showMessage(`Deleted ${person.name} successfully`, 'success')
+    })
+    .catch(error => {
+      showMessage(
+        `${person.name} has already been removed from server`,
+        'error'
+      )
+
+      setPersons(prevPersons =>
+        prevPersons.filter(p => p.id !== id)
+      )
+    })
   }
 
   const personsToShow = persons.filter(person =>
