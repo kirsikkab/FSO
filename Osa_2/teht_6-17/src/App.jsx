@@ -96,8 +96,12 @@ const App = () => {
         showMessage(`Added ${returnedPerson.name}`, 'success')
       })
       .catch(error => {
+        console.log(error)
+        console.log(error.response)
+
         const errorMessage =
           error.response?.data?.error || 'Something went wrong'
+
         showMessage(errorMessage, 'error')
       })
 }

@@ -78,9 +78,7 @@ app.post('/api/persons', (request, response, next) => {
   Person.findOne({ name: body.name })
     .then(existingPerson => {
       if (existingPerson) {
-        return response.status(400).json({
-          error: 'name must be unique'
-        })
+        throw new Error('name must be unique')
       }
 
       const person = new Person({
@@ -91,9 +89,7 @@ app.post('/api/persons', (request, response, next) => {
       return person.save()
     })
     .then(savedPerson => {
-      if (savedPerson) {
-        response.json(savedPerson)
-      }
+      response.json(savedPerson)
     })
     .catch(error => next(error))
 })
@@ -136,6 +132,10 @@ const errorHandler = (error, request, response, next) => {
   }
 
   if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
+  }
+
+  if (error.message === 'name must be unique') {
     return response.status(400).json({ error: error.message })
   }
 
