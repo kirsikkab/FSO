@@ -59,7 +59,7 @@ const App = () => {
         number: newNumber
       }
 
-      phonebookService
+      return phonebookService
         .update(existingPerson.id, updatedPerson)
         .then(returnedPerson => {
           setPersons(
@@ -78,7 +78,6 @@ const App = () => {
           showMessage(errorMessage, 'error')
         })
 
-      return
     }
 
     const personObject = {
@@ -86,7 +85,7 @@ const App = () => {
       number: newNumber
     }
 
-    phonebookService
+    return phonebookService
       .create(personObject)
       .then(returnedPerson => {
         setPersons(prev => prev.concat(returnedPerson))
