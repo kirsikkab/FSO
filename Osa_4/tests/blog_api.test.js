@@ -67,6 +67,27 @@ test('a valid blog can be added', async () => {
   assert(titles.includes('Test blog from test'))
 })
 
+test('if likes is missing, it defaults to 0', async () => {
+  const newBlog = {
+    title: 'No likes blog',
+    author: 'Test',
+    url: 'http://example.com'
+    // 👈 likes puuttuu
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await helper.blogsInDb()
+
+  const addedBlog = blogsAtEnd.find(b => b.title === 'No likes blog')
+
+  assert.strictEqual(addedBlog.likes, 0)
+})
+
 // suljetaan tietokanta
 after(async () => {
   await mongoose.connection.close()
