@@ -45,6 +45,15 @@ test('all blogs are returned', async () => {
   assert.strictEqual(response.body.length, initialBlogs.length)
 })
 
+test('blog id is named id, not _id', async () => {
+  const response = await api.get('/api/blogs')
+
+  const blog = response.body[0]
+
+  assert(blog.id !== undefined)
+  assert(blog._id === undefined)
+})
+
 // suljetaan tietokanta
 after(async () => {
   await mongoose.connection.close()
