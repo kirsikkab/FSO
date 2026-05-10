@@ -18,9 +18,9 @@ POST http://localhost:3003/api/users
 Content-Type: application/json
 
 {
-  "username": "kirsikka1",
-  "name": "Kirsikka Vister",
-  "password": "salainen1234"
+  "username": "kirsikkBBB",
+  "name": "KirsikkaBBB Vister",
+  "password": "salainenBBB1234"
 }
 
 ### Get all users
@@ -31,18 +31,25 @@ POST http://localhost:3003/api/login
 Content-Type: application/json
 
 {
-  "username": "kirsikka",
-  "password": "salasana123"
+  "username": "kirsikkBBB",
+  "password": "salainenBBB1234"
 }
 
 ### Add blog with token
 POST http://localhost:3003/api/blogs
 Content-Type: application/json
-Authorization: Bearer OMA_TOKEN_TÄHÄN
+Authorization: Bearer TOKEN_TÄHÄN
 
 {
-  "title": "Token toimii!",
-  "author": "Kirsikka",
+  "title": "AAAAA toimii!",
+  "author": "KirsikkAAA",
   "url": "http://example.com",
   "likes": 1
 }
+
+### Delete blog (correct user)
+DELETE http://localhost:3003/api/blogs/**ID_TÄHÄN**
+Authorization: Bearer TOKEN_TÄHÄN
+
+### Delete blog without token
+DELETE http://localhost:3003/api/blogs/**ID_TÄHÄN**
