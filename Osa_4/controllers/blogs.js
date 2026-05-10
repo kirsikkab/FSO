@@ -1,6 +1,15 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
 const User = require('../models/user')
+const jwt = require('jsonwebtoken')
+
+const getTokenFrom = request => {
+  const authorization = request.get('authorization')
+  if (authorization && authorization.startsWith('Bearer ')) {
+    return authorization.replace('Bearer ', '')
+  }
+  return null
+}
 
 // GET
 blogsRouter.get('/', async (req, res) => {
@@ -15,17 +24,21 @@ blogsRouter.get('/', async (req, res) => {
 blogsRouter.post('/', async (req, res) => {
   const body = req.body
 
+  const token = getTokenFrom(req)
+
+  const decodedToken = jwt.verify(token, process.env.SECRET)
+
+  if (!decodedToken.id) {
+    return res.status(401).json({ error: 'token invalid' })
+  }
+
+  const user = await User.findById(decodedToken.id)
+
+  // validointi
   if (!body.title || !body.url) {
     return res.status(400).json({
       error: 'title or url missing'
     })
-  }
-
-  // hae joku käyttäjä blogille
-  const user = await User.findOne({})
-
-  if (!user) {
-    return res.status(400).json({ error: 'no users in database' })
   }
 
   const blog = new Blog({
@@ -33,22 +46,16 @@ blogsRouter.post('/', async (req, res) => {
     author: body.author,
     url: body.url,
     likes: body.likes || 0,
-    user: user._id   // 🔥 tärkeä
+    user: user._id
   })
 
   const savedBlog = await blog.save()
 
-  // lisää blog käyttäjälle
+  // liitetään blogi käyttäjälle
   user.blogs = user.blogs.concat(savedBlog._id)
   await user.save()
 
   res.status(201).json(savedBlog)
-})
-
-// DELETE
-blogsRouter.delete('/:id', async (req, res) => {
-  await Blog.findByIdAndDelete(req.params.id)
-  res.status(204).end()
 })
 
 // PUT (update)
