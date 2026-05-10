@@ -7,10 +7,10 @@ POST http://localhost:3003/api/blogs
 Content-Type: application/json
 
 {
-  "title": "Refactor toimii",
+  "title": "Tämähän toimii",
   "author": "Kirsikka",
   "url": "https://example.com",
-  "likes": 3
+  "likes": 1
 }
 
 ### Add new user
@@ -18,9 +18,9 @@ POST http://localhost:3003/api/users
 Content-Type: application/json
 
 {
-  "username": "kirsi",
-  "name": "Kirsi Vister",
-  "password": "salainen123"
+  "username": "kirsikka1",
+  "name": "Kirsikka Vister",
+  "password": "salainen1234"
 }
 
 ### Get all users
