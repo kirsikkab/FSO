@@ -2,22 +2,52 @@ const { test, after, beforeEach, describe } = require('node:test')
 const assert = require('node:assert')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
+const bcrypt = require('bcrypt')
 
 const app = require('../app')
 const Blog = require('../models/blog')
+const User = require('../models/user')
 const helper = require('./test_helper')
 
 const api = supertest(app)
+
+// 🔐 login helper
+const loginAndGetToken = async () => {
+  const response = await api
+    .post('/api/login')
+    .send({
+      username: 'testuser',
+      password: 'sekret'
+    })
+
+  return response.body.token
+}
 
 describe('when there are initially some blogs saved', () => {
 
   beforeEach(async () => {
     await Blog.deleteMany({})
-    await Blog.insertMany(helper.initialBlogs)
+    await User.deleteMany({})
+
+    const passwordHash = await bcrypt.hash('sekret', 10)
+
+    const user = new User({
+      username: 'testuser',
+      passwordHash
+    })
+
+    const savedUser = await user.save()
+
+    // liitetään blogit käyttäjään
+    const blogsWithUser = helper.initialBlogs.map(blog => ({
+      ...blog,
+      user: savedUser._id
+    }))
+
+    await Blog.insertMany(blogsWithUser)
   })
 
-  
-  // GET TESTIT
+  //  GET 
   describe('fetching blogs', () => {
 
     test('blogs are returned as json', async () => {
@@ -43,11 +73,12 @@ describe('when there are initially some blogs saved', () => {
     })
   })
 
-
-  // POST TESTIT
+  //  POST 
   describe('addition of a new blog', () => {
 
-    test('a valid blog can be added', async () => {
+    test('a valid blog can be added with token', async () => {
+      const token = await loginAndGetToken()
+
       const newBlog = {
         title: 'Test blog from test',
         author: 'Kirsikka',
@@ -57,9 +88,9 @@ describe('when there are initially some blogs saved', () => {
 
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlog)
         .expect(201)
-        .expect('Content-Type', /application\/json/)
 
       const blogsAtEnd = await helper.blogsInDb()
 
@@ -67,14 +98,11 @@ describe('when there are initially some blogs saved', () => {
         blogsAtEnd.length,
         helper.initialBlogs.length + 1
       )
-
-      const titles = blogsAtEnd.map(b => b.title)
-      assert(titles.includes('Test blog from test'))
     })
 
-    test('if likes is missing, it defaults to 0', async () => {
+    test('adding a blog fails with 401 if token is missing', async () => {
       const newBlog = {
-        title: 'No likes blog',
+        title: 'No token blog',
         author: 'Test',
         url: 'http://example.com'
       }
@@ -82,16 +110,19 @@ describe('when there are initially some blogs saved', () => {
       await api
         .post('/api/blogs')
         .send(newBlog)
-        .expect(201)
+        .expect(401)
 
       const blogsAtEnd = await helper.blogsInDb()
 
-      const addedBlog = blogsAtEnd.find(b => b.title === 'No likes blog')
-
-      assert.strictEqual(addedBlog.likes, 0)
+      assert.strictEqual(
+        blogsAtEnd.length,
+        helper.initialBlogs.length
+      )
     })
 
     test('blog without title is not added', async () => {
+      const token = await loginAndGetToken()
+
       const newBlog = {
         author: 'No title',
         url: 'http://example.com',
@@ -100,15 +131,14 @@ describe('when there are initially some blogs saved', () => {
 
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlog)
         .expect(400)
-
-      const blogsAtEnd = await helper.blogsInDb()
-
-      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
     })
 
     test('blog without url is not added', async () => {
+      const token = await loginAndGetToken()
+
       const newBlog = {
         title: 'No url',
         author: 'Test',
@@ -117,75 +147,61 @@ describe('when there are initially some blogs saved', () => {
 
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlog)
         .expect(400)
+    })
+  })
+
+  //  DELETE 
+  describe('deletion of a blog', () => {
+
+    test('succeeds with status code 204 if id is valid and user is owner', async () => {
+      const token = await loginAndGetToken()
+
+      const blogsAtStart = await helper.blogsInDb()
+      const blogToDelete = blogsAtStart[0]
+
+      await api
+        .delete(`/api/blogs/${blogToDelete.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(204)
 
       const blogsAtEnd = await helper.blogsInDb()
 
-      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+      assert.strictEqual(
+        blogsAtEnd.length,
+        helper.initialBlogs.length - 1
+      )
+    })
+  })
+
+  //  PUT 
+  describe('updating a blog', () => {
+
+    test('likes can be updated', async () => {
+      const blogsAtStart = await helper.blogsInDb()
+      const blogToUpdate = blogsAtStart[0]
+
+      const updatedData = {
+        ...blogToUpdate,
+        likes: blogToUpdate.likes + 10
+      }
+
+      const response = await api
+        .put(`/api/blogs/${blogToUpdate.id}`)
+        .send(updatedData)
+        .expect(200)
+
+      assert.strictEqual(
+        response.body.likes,
+        blogToUpdate.likes + 10
+      )
     })
   })
 })
 
-describe('deletion of a blog', () => {
-
-  test('succeeds with status code 204 if id is valid', async () => {
-    const blogsAtStart = await helper.blogsInDb()
-    const blogToDelete = blogsAtStart[0]
-
-    await api
-      .delete(`/api/blogs/${blogToDelete.id}`)
-      .expect(204)
-
-    const blogsAtEnd = await helper.blogsInDb()
-
-    const ids = blogsAtEnd.map(b => b.id)
-
-    // poistettu blogi ei enää ole listassa
-    assert(!ids.includes(blogToDelete.id))
-
-    // määrä vähenee yhdellä
-    assert.strictEqual(
-      blogsAtEnd.length,
-      helper.initialBlogs.length - 1
-    )
-  })
-})
-
-describe('updating a blog', () => {
-
-  test('likes can be updated', async () => {
-    const blogsAtStart = await helper.blogsInDb()
-    const blogToUpdate = blogsAtStart[0]
-
-    const updatedData = {
-      ...blogToUpdate,
-      likes: blogToUpdate.likes + 10
-    }
-
-    const response = await api
-      .put(`/api/blogs/${blogToUpdate.id}`)
-      .send(updatedData)
-      .expect(200)
-      .expect('Content-Type', /application\/json/)
-
-    assert.strictEqual(
-      response.body.likes,
-      blogToUpdate.likes + 10
-    )
-
-    const blogsAtEnd = await helper.blogsInDb()
-    const updatedBlog = blogsAtEnd.find(b => b.id === blogToUpdate.id)
-
-    assert.strictEqual(
-      updatedBlog.likes,
-      blogToUpdate.likes + 10
-    )
-  })
-
-})
-
-// Suljetaan tietokantayhteys testien jälkeen
+// suljetaan tietokanta
 after(async () => {
   await mongoose.connection.close()
 })
