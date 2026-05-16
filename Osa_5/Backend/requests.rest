@@ -9,9 +9,9 @@ POST http://localhost:3003/api/users
 Content-Type: application/json
 
 {
-  "username": "kirsikkBBB",
-  "name": "KirsikkaBBB Vister",
-  "password": "salainenBBB1234"
+  "username": "Testaaja",
+  "name": "Testi Käyttäjä",
+  "password": "Testisana1234"
 }
 
 ### Login
@@ -19,8 +19,8 @@ POST http://localhost:3003/api/login
 Content-Type: application/json
 
 {
-  "username": "kirsikkBBB",
-  "password": "salainenBBB1234"
+  "username": "Testaaja",
+  "password": "Testisana1234"
 }
 
 ### Add blog with token
