@@ -18,7 +18,7 @@ const App = () => {
   useEffect(() => {
     blogService.getAll().then(blogs =>
       setBlogs( blogs )
-    )  
+    )
   }, [])
 
   useEffect(() => {
@@ -51,7 +51,7 @@ const App = () => {
       setUsername('')
       setPassword('')
 
-    } catch (exception) {
+    } catch {
       setMessage('wrong username or password')
 
       setTimeout(() => {
@@ -92,7 +92,7 @@ const App = () => {
         setMessage(null)
       }, 5000)
 
-    } catch (exception) {
+    } catch {
       setMessage('error creating blog')
 
       setTimeout(() => {
@@ -147,7 +147,7 @@ const App = () => {
         setMessage(null)
       }, 5000)
 
-    } catch (exception) {
+    } catch {
       setMessage('error removing blog')
 
       setTimeout(() => {
@@ -216,7 +216,7 @@ const App = () => {
             handleLike={handleLike}
             handleDelete={handleDelete}
           />
-      )}
+        )}
     </div>
   )
 }

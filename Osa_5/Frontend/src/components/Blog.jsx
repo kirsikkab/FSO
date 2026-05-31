@@ -50,7 +50,7 @@ const Blog = ({ blog, handleLike, handleDelete, user }) => {
               remove
             </button>
           )}
-          
+
         </div>
       )}
 
