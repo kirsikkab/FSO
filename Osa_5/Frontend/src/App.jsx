@@ -69,9 +69,20 @@ const App = () => {
     try {
       const returnedBlog = await blogService.create(blogObject)
 
+      const blogWithUser = {
+        ...returnedBlog,
+        user: {
+          username: user.username,
+          name: user.name,
+          id: user.id
+        }
+      }
+
       blogFormRef.current.toggleVisibility()
 
-      setBlogs(blogs.concat(returnedBlog))
+      setBlogs(prevBlogs =>
+        prevBlogs.concat(blogWithUser)
+      )
 
       setMessage(
         `a new blog ${returnedBlog.title} by ${returnedBlog.author} added`
@@ -110,6 +121,39 @@ const App = () => {
         b.id !== blog.id ? b : returnedBlog
       )
     )
+  }
+
+  const handleDelete = async (blog) => {
+    const ok = window.confirm(
+      `Remove blog ${blog.title} by ${blog.author}?`
+    )
+
+    if (!ok) {
+      return
+    }
+
+    try {
+      await blogService.remove(blog.id)
+
+      setBlogs(
+        blogs.filter(b => b.id !== blog.id)
+      )
+
+      setMessage(
+        `blog ${blog.title} removed`
+      )
+
+      setTimeout(() => {
+        setMessage(null)
+      }, 5000)
+
+    } catch (exception) {
+      setMessage('error removing blog')
+
+      setTimeout(() => {
+        setMessage(null)
+      }, 5000)
+    }
   }
 
   if (user === null) {
@@ -168,7 +212,9 @@ const App = () => {
           <Blog
             key={blog.id}
             blog={blog}
+            user={user}
             handleLike={handleLike}
+            handleDelete={handleDelete}
           />
       )}
     </div>
