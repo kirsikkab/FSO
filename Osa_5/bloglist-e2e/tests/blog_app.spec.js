@@ -63,4 +63,41 @@ describe('Blog app', () => {
 
     })
   })
+
+  describe('When logged in', () => {
+    beforeEach(async ({ page }) => {
+
+        await page.getByRole('textbox').first().fill('wuffe')
+
+        await page.getByRole('textbox').last().fill('salainen')
+
+        await page.getByRole('button', { name: 'login' }).click()
+
+    })
+
+    test('a new blog can be created', async ({ page }) => {
+
+        await page.getByRole('button', {
+            name: 'create new blog'
+        }).click()
+
+        const textboxes = page.getByRole('textbox')
+
+        await textboxes.nth(0).fill('React toimii')
+
+        await textboxes.nth(1).fill('M. Koiranen')
+
+        await textboxes.nth(2).fill('https://example.com')
+
+        await page.getByRole('button', {
+            name: 'create'
+        }).click()
+
+        await expect(
+            page.getByText('React toimii').last()
+        ).toBeVisible()
+
+        })
+   })
+
 })
