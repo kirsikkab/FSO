@@ -74,3 +74,43 @@ test('shows url, likes and author when view button is clicked', async () => {
     screen.getByText('M. Koiranen')
   ).toBeDefined()
 })
+
+test('clicking like button twice calls event handler twice', async () => {
+  const blog = {
+    title: 'React toimii',
+    author: 'M. Koiranen',
+    url: 'https://example.com',
+    likes: 7,
+    user: {
+      username: 'wuffe',
+      name: 'Minni Koiranen',
+    }
+  }
+
+  // mock-funktio
+  const mockHandler = vi.fn()
+
+  render(
+    <Blog
+      blog={blog}
+      handleLike={mockHandler}
+    />
+  )
+
+  const user = userEvent.setup()
+
+  // avataan blogin tiedot näkyviin
+  const viewButton = screen.getByText('view')
+
+  await user.click(viewButton)
+
+  // etsitään like-nappi
+  const likeButton = screen.getByText('like')
+
+  // klikataan kahdesti
+  await user.click(likeButton)
+  await user.click(likeButton)
+
+  // tarkistetaan kutsujen määrä
+  expect(mockHandler.mock.calls).toHaveLength(2)
+})
