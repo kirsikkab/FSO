@@ -5,21 +5,26 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
   { ignores: ['dist'] },
+
   {
     files: ['**/*.{js,jsx}'],
+
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
+
       parserOptions: {
         ecmaVersion: 'latest',
         ecmaFeatures: { jsx: true },
         sourceType: 'module'
       }
     },
+
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh
     },
+
     rules: {
       ...js.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
@@ -40,6 +45,15 @@ export default [
       'object-curly-spacing': ['error', 'always'],
       'arrow-spacing': ['error', { before: true, after: true }],
       'no-console': 'off'
+    }
+  },
+  {
+    files: ['**/*.test.{js,jsx}'],
+
+    languageOptions: {
+      globals: {
+        ...globals.vitest
+      }
     }
   }
 ]
