@@ -8,8 +8,8 @@ describe('Blog app', () => {
 
     await request.post('http://localhost:3003/api/users', {
       data: {
-        name: 'Matti Luukkainen',
-        username: 'mluukkai',
+        name: 'Minni Koiranen',
+        username: 'wuffe',
         password: 'salainen'
       }
     })
@@ -27,5 +27,40 @@ describe('Blog app', () => {
       page.getByRole('button', { name: 'login' })
     ).toBeVisible()
 
+  })
+
+  describe('Login', () => {
+
+    test('succeeds with correct credentials', async ({ page }) => {
+
+      await page.getByRole('textbox').first().fill('wuffe')
+
+      await page.getByRole('textbox').last().fill('salainen')
+
+      await page.getByRole('button', { name: 'login' }).click()
+
+      await expect(
+        page.getByText('Minni Koiranen logged in')
+      ).toBeVisible()
+
+    })
+
+    test('fails with wrong credentials', async ({ page }) => {
+
+      await page.getByRole('textbox').first().fill('wuffe')
+
+      await page.getByRole('textbox').last().fill('vääräsalasana')
+
+      await page.getByRole('button', { name: 'login' }).click()
+
+      await expect(
+        page.getByText('wrong username or password')
+      ).toBeVisible()
+
+      await expect(
+        page.getByText('Minni Koiranen logged in')
+      ).not.toBeVisible()
+
+    })
   })
 })
