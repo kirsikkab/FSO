@@ -98,6 +98,47 @@ describe('Blog app', () => {
         ).toBeVisible()
 
         })
+    test('a blog can be liked', async ({ page }) => {
+
+        await page.getByRole('button', {
+            name: 'create new blog'
+        }).click()
+
+        const textboxes = page.getByRole('textbox')
+
+        await textboxes.nth(0).fill('React toimii')
+        await textboxes.nth(1).fill('M. Koiranen')
+        await textboxes.nth(2).fill('https://example.com')
+
+        await page.getByRole('button', {
+            name: 'create'
+        }).click()
+
+        // etsitään juuri luotu blogi
+        const blogElement = page.getByText('React toimii').last()
+
+        // avataan juuri tämän blogin tiedot
+        await blogElement
+        .locator('..')
+        .getByRole('button', { name: 'view' })
+        .click()
+
+        // likes näkyy
+        await expect(
+        page.getByText('likes 0')
+        ).toBeVisible()
+
+        // painetaan like
+        await page.getByRole('button', {
+        name: 'like'
+        }).click()
+
+        // tarkistetaan että likes kasvoi
+        await expect(
+            page.getByText('likes 1')
+        ).toBeVisible()
+
+        })
    })
 
 })
