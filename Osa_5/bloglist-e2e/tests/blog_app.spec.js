@@ -14,6 +14,14 @@ describe('Blog app', () => {
       }
     })
 
+    await request.post('http://localhost:3003/api/users', {
+        data: {
+            name: 'Toinen Käyttäjä',
+            username: 'toinen',
+            password: 'salasana2'
+        }
+    })
+
     await page.goto('http://localhost:5173')
   })
 
@@ -181,5 +189,50 @@ describe('Blog app', () => {
             page.getByText('Poistettava blogi').last()
         ).not.toBeVisible()
     })
+
+    test('only the user who added the blog sees the remove button', async ({ page }) => {
+
+        // luodaan blogi käyttäjällä wuffe
+        await page.getByRole('button', {
+            name: 'create new blog'
+        }).click()
+
+        const textboxes = page.getByRole('textbox')
+
+        await textboxes.nth(0).fill('Salainen blogi')
+        await textboxes.nth(1).fill('M. Koiranen')
+        await textboxes.nth(2).fill('https://example.com')
+
+        await page.getByRole('button', {
+            name: 'create'
+        }).click()
+
+        // kirjaudutaan ulos
+        await page.getByRole('button', {
+            name: 'logout'
+        }).click()
+
+        // kirjaudutaan toisella käyttäjällä
+        await page.getByRole('textbox').first().fill('toinen')
+
+        await page.getByRole('textbox').last().fill('salasana2')
+
+        await page.getByRole('button', {
+            name: 'login'
+        }).click()
+
+        // avataan blogin tiedot
+        await page.getByRole('button', {
+            name: 'view'
+        }).last().click()
+
+        // remove-nappia EI saa näkyä
+        await expect(
+            page.getByRole('button', {
+            name: 'remove'
+            })
+        ).not.toBeVisible()
+
+        })
 
 })})
