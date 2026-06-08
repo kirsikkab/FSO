@@ -97,7 +97,8 @@ describe('Blog app', () => {
             page.getByText('React toimii').last()
         ).toBeVisible()
 
-        })
+    })
+
     test('a blog can be liked', async ({ page }) => {
 
         await page.getByRole('button', {
@@ -138,7 +139,47 @@ describe('Blog app', () => {
             page.getByText('likes 1')
         ).toBeVisible()
 
-        })
-   })
+    })
 
-})
+   test('a blog can be deleted by the user who created it', async ({ page }) => {
+
+        // luodaan blogi
+        await page.getByRole('button', {
+            name: 'create new blog'
+        }).click()
+
+        const textboxes = page.getByRole('textbox')
+
+        await textboxes.nth(0).fill('Poistettava blogi')
+        await textboxes.nth(1).fill('M. Koiranen')
+        await textboxes.nth(2).fill('https://example.com')
+
+        await page.getByRole('button', {
+            name: 'create'
+        }).click()
+
+        // avataan blogin tiedot
+        const blogElement = page
+            .getByText('Poistettava blogi')
+            .last()
+
+        await blogElement
+            .locator('..')
+            .getByRole('button', { name: 'view' })
+            .click()
+
+        // hyväksytään confirm-dialogi
+        page.on('dialog', dialog => dialog.accept())
+
+        // painetaan remove
+        await page.getByRole('button', {
+            name: 'remove'
+        }).click()
+
+        // varmistetaan että blogi poistui
+        await expect(
+            page.getByText('Poistettava blogi').last()
+        ).not.toBeVisible()
+    })
+
+})})
