@@ -186,8 +186,10 @@ describe('Blog app', () => {
 
         // varmistetaan että blogi poistui
         await expect(
-            page.getByText('Poistettava blogi').last()
-        ).not.toBeVisible()
+            page.locator('.blog').filter({
+            hasText: 'Poistettava blogi'
+        })
+        ).toHaveCount(0)
     })
 
     test('only the user who added the blog sees the remove button', async ({ page }) => {
@@ -212,6 +214,12 @@ describe('Blog app', () => {
             name: 'logout'
         }).click()
 
+        //await page.pause() 
+
+        await expect(
+            page.getByRole('button', { name: 'login' })
+        ).toBeVisible()
+
         // kirjaudutaan toisella käyttäjällä
         await page.getByRole('textbox').first().fill('toinen')
 
@@ -221,10 +229,28 @@ describe('Blog app', () => {
             name: 'login'
         }).click()
 
-        // avataan blogin tiedot
-        await page.getByRole('button', {
-            name: 'view'
-        }).last().click()
+        // tarkistetaan että toinen käyttäjä todella kirjautui sisään
+        await expect(
+            page.getByText('Toinen Käyttäjä logged in')
+        ).toBeVisible()
+
+        await page.reload()
+
+        // odotetaan että blogi näkyy listassa
+        await expect(
+            page.getByText('Salainen blogi')
+        ).toBeVisible()
+
+        // etsitään juuri tämä blogi
+        const blogElement = page
+            .getByText('Salainen blogi')
+            .last()
+
+        // avataan juuri tämän blogin view-nappi
+        await blogElement
+            .locator('..')
+            .getByRole('button', { name: 'view' })
+            .click()
 
         // remove-nappia EI saa näkyä
         await expect(
@@ -234,5 +260,59 @@ describe('Blog app', () => {
         ).not.toBeVisible()
 
         })
+    test('blogs are ordered according to likes', async ({ page }) => {
+        await page.getByRole('button', {
+            name: 'create new blog'
+        }).click()
+
+        let textboxes = page.getByRole('textbox')
+
+        await textboxes.nth(0).fill('Ensimmäinen blogi')
+        await textboxes.nth(1).fill('M. Koiranen')
+        await textboxes.nth(2).fill('https://eka.fi')
+
+        await page.getByRole('button', {
+            name: 'create'
+        }).click()
+
+        await page.getByRole('button', {
+            name: 'create new blog'
+        }).click()
+
+        textboxes = page.getByRole('textbox')
+
+        await textboxes.nth(0).fill('Toinen blogi')
+        await textboxes.nth(1).fill('M. Koiranen')
+        await textboxes.nth(2).fill('https://toka.fi')
+
+        await page.getByRole('button', {
+        name: 'create'
+        }).click()
+
+        const viewButtons = page.getByRole('button', {
+            name: 'view'
+        })
+
+        const count = await viewButtons.count()
+
+        await viewButtons.nth(count - 2).click()
+        await viewButtons.nth(count - 1).click()
+
+        const likeButtons = page.getByRole('button', {
+            name: 'like'
+        })
+
+        await likeButtons.nth(1).click()
+        await likeButtons.nth(1).click()
+        await likeButtons.nth(1).click()
+
+        const blogs = await page
+            .locator('.blog')
+            .allTextContents()
+       
+        expect(blogs[0]).toContain('Toinen blogi')
+        expect(blogs[1]).toContain('Ensimmäinen blogi')
+
+    })
 
 })})
