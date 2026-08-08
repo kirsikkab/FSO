@@ -5,8 +5,18 @@ import loginService from './services/login'
 import Notification from './components/Notification'
 import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
+import LoginForm from './components/LoginForm'
+import {
+  Routes,
+  Route,
+  Link,
+  useNavigate
+} from 'react-router-dom'
+
+
 
 const App = () => {
+  const navigate = useNavigate()
   const [blogs, setBlogs] = useState([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -50,6 +60,7 @@ const App = () => {
       setUser(user)
       setUsername('')
       setPassword('')
+      navigate('/')
 
     } catch {
       setMessage('wrong username or password')
@@ -63,6 +74,7 @@ const App = () => {
   const handleLogout = () => {
     window.localStorage.removeItem('loggedBlogappUser')
     setUser(null)
+    navigate('/')
   }
 
   const addBlog = async (blogObject) => {
@@ -156,69 +168,81 @@ const App = () => {
     }
   }
 
-  if (user === null) {
-    return (
-      <div>
-        <h2>Log in to application</h2>
-
-        <Notification message={message} />
-
-        <form onSubmit={handleLogin}>
-          <div>
-            username
-            <input
-              type="text"
-              value={username}
-              onChange={({ target }) => setUsername(target.value)}
-            />
-          </div>
-
-          <div>
-            password
-            <input
-              type="password"
-              value={password}
-              onChange={({ target }) => setPassword(target.value)}
-            />
-          </div>
-
-          <button type="submit">
-            login
-          </button>
-        </form>
-      </div>
-    )
-  }
-
   return (
     <div>
-      <h2>blogs</h2>
+      <div style={{ padding: 10, background: '#eee', marginBottom: 15 }}>
+        <Link to="/" style={{ marginRight: 10 }}>
+          blogs
+        </Link>
+
+        {!user && (
+          <Link to="/login">
+            login
+          </Link>
+        )}
+
+        {user && (
+          <>
+            <span style={{ marginLeft: 10, marginRight: 10 }}>
+              {user.name} logged in
+            </span>
+
+            <button onClick={handleLogout}>
+              logout
+            </button>
+          </>
+        )}
+      </div>
 
       <Notification message={message} />
 
-      <p>
-        {user.name} logged in
-        <button onClick={handleLogout}>logout</button>
-      </p>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <div>
+              <h2>blogs</h2>
 
-      <Togglable buttonLabel="create new blog" ref={blogFormRef}>
-        <BlogForm createBlog={addBlog} />
-      </Togglable>
+              {blogs
+                .slice()
+                .sort((a, b) => b.likes - a.likes)
+                .map(blog =>
+                  <Blog
+                    key={blog.id}
+                    blog={blog}
+                    user={user}
+                    handleLike={handleLike}
+                    handleDelete={handleDelete}
+                  />
+                )}
+            </div>
+          }
+        />
 
-      {blogs
-        .slice()
-        .sort((a, b) => b.likes - a.likes)
-        .map(blog =>
-          <Blog
-            key={blog.id}
-            blog={blog}
-            user={user}
-            handleLike={handleLike}
-            handleDelete={handleDelete}
-          />
-        )}
+        <Route
+          path="/login"
+          element={
+            user ? (
+              <div>
+                <h2>Already logged in</h2>
+              </div>
+            ) : (
+              <LoginForm
+                handleLogin={handleLogin}
+                username={username}
+                password={password}
+                setUsername={setUsername}
+                setPassword={setPassword}
+              />
+            )
+          }
+        />
+      </Routes>
     </div>
   )
+  
+
+  
 }
 
 export default App
