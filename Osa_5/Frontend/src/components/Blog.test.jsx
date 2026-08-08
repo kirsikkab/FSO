@@ -1,116 +1,68 @@
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import Blog from './Blog'
+import BlogView from './BlogView'
 
-test('renders title but not url or likes by default', () => {
+describe('Blog component', () => {
   const blog = {
-    title: 'React toimii',
-    author: 'M. Koiranen',
-    url: 'https://example.com',
-    likes: 7,
+    title: 'Testing React',
+    author: 'Michael Chan',
+    url: 'https://reactpatterns.com',
+    likes: 5,
     user: {
-      username: 'wuffe',
-      name: 'Minni Koiranen',
+      username: 'mluukkai',
+      name: 'Matti Luukkainen',
+      id: '12345'
     }
   }
 
-  render(
-    <Blog blog={blog} />
-  )
+  test('shows blog details to a logged out user without buttons', () => {
+    render(<BlogView blog={blog} />)
 
-  // title näkyy
-  const titleElement = screen.getByText('React toimii')
+    expect(screen.getByText(/Testing React/)).toBeInTheDocument()
+    expect(screen.getByText(/Michael Chan/)).toBeInTheDocument()
+    expect(screen.getByText(/https:\/\/reactpatterns.com/)).toBeInTheDocument()
+    expect(screen.getByText(/likes 5/)).toBeInTheDocument()
 
-  expect(titleElement).toBeDefined()
+    expect(screen.queryByText('like')).toBeNull()
+    expect(screen.queryByText('remove')).toBeNull()
+  })
 
-  // url ei näy
-  const urlElement = screen.queryByText(
-    'https://example.com'
-  )
-
-  expect(urlElement).toBeNull()
-
-  // likes ei näy
-  const likesElement = screen.queryByText('likes 7')
-
-  expect(likesElement).toBeNull()
-})
-
-
-test('shows url, likes and author when view button is clicked', async () => {
-  const blog = {
-    title: 'React toimii',
-    author: 'M. Koiranen',
-    url: 'https://example.com',
-    likes: 7,
-    user: {
-      username: 'wuffe',
-      name: 'Minni Koiranen',
+  test('shows only like button to a logged in user who is not the creator', () => {
+    const user = {
+      username: 'someoneelse',
+      name: 'Someone Else',
+      id: '999'
     }
-  }
 
-  render(
-    <Blog blog={blog} />
-  )
+    render(
+      <BlogView
+        blog={blog}
+        user={user}
+        handleLike={() => {}}
+        handleDelete={() => {}}
+      />
+    )
 
-  const user = userEvent.setup()
+    expect(screen.getByText('like')).toBeInTheDocument()
+    expect(screen.queryByText('remove')).toBeNull()
+  })
 
-  const button = screen.getByText('view')
-
-  await user.click(button)
-
-  // url näkyy
-  expect(
-    screen.getByText('https://example.com')
-  ).toBeDefined()
-
-  // likes näkyy
-  expect(
-    screen.getByText('likes 7')
-  ).toBeDefined()
-
-  // author näkyy
-  expect(
-    screen.getByText('M. Koiranen')
-  ).toBeDefined()
-})
-
-test('clicking like button twice calls event handler twice', async () => {
-  const blog = {
-    title: 'React toimii',
-    author: 'M. Koiranen',
-    url: 'https://example.com',
-    likes: 7,
-    user: {
-      username: 'wuffe',
-      name: 'Minni Koiranen',
+  test('shows like and remove buttons to the blog creator', () => {
+    const user = {
+      username: 'mluukkai',
+      name: 'Matti Luukkainen',
+      id: '12345'
     }
-  }
 
-  // mock-funktio
-  const mockHandler = vi.fn()
+    render(
+      <BlogView
+        blog={blog}
+        user={user}
+        handleLike={() => {}}
+        handleDelete={() => {}}
+      />
+    )
 
-  render(
-    <Blog
-      blog={blog}
-      handleLike={mockHandler}
-    />
-  )
-
-  const user = userEvent.setup()
-
-  // avataan blogin tiedot näkyviin
-  const viewButton = screen.getByText('view')
-
-  await user.click(viewButton)
-
-  // etsitään like-nappi
-  const likeButton = screen.getByText('like')
-
-  // klikataan kahdesti
-  await user.click(likeButton)
-  await user.click(likeButton)
-
-  // tarkistetaan kutsujen määrä
-  expect(mockHandler.mock.calls).toHaveLength(2)
+    expect(screen.getByText('like')).toBeInTheDocument()
+    expect(screen.getByText('remove')).toBeInTheDocument()
+  })
 })

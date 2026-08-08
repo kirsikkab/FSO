@@ -35,6 +35,7 @@ test('calls event handler with correct details when a new blog is created', asyn
   expect(createBlog.mock.calls[0][0]).toEqual({
     title: 'React toimii',
     author: 'M. Koiranen',
-    url: 'https://example.com'
+    url: 'https://example.com',
+    likes: 0
   })
 })
