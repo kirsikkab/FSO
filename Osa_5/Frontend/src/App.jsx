@@ -6,11 +6,14 @@ import Notification from './components/Notification'
 import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
 import LoginForm from './components/LoginForm'
+import BlogView from './components/BlogView'
+
 import {
   Routes,
   Route,
   Link,
-  useNavigate
+  useNavigate,
+  useParams
 } from 'react-router-dom'
 
 
@@ -40,6 +43,21 @@ const App = () => {
       blogService.setToken(user.token)
     }
   }, [])
+
+  const BlogPage = () => {
+    const { id } = useParams()
+
+    const blog = blogs.find(b => b.id === id)
+
+    return (
+      <BlogView
+        blog={blog}
+        user={user}
+        handleLike={handleLike}
+        handleDelete={handleDelete}
+      />
+    )
+  }
 
   const handleLogin = async (event) => {
     event.preventDefault()
@@ -203,18 +221,17 @@ const App = () => {
             <div>
               <h2>blogs</h2>
 
-              {blogs
-                .slice()
-                .sort((a, b) => b.likes - a.likes)
-                .map(blog =>
-                  <Blog
-                    key={blog.id}
-                    blog={blog}
-                    user={user}
-                    handleLike={handleLike}
-                    handleDelete={handleDelete}
-                  />
-                )}
+              <ul>
+                {blogs
+                  .slice()
+                  .sort((a, b) => b.likes - a.likes)
+                  .map(blog =>
+                    <Blog
+                      key={blog.id}
+                      blog={blog}
+                    />
+                  )}
+              </ul>
             </div>
           }
         />
@@ -237,6 +254,12 @@ const App = () => {
             )
           }
         />
+
+        <Route
+          path="/blogs/:id"
+          element={<BlogPage />}
+        />
+
       </Routes>
     </div>
   )
