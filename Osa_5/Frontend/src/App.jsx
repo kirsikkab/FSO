@@ -1,9 +1,8 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import Notification from './components/Notification'
-import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
 import LoginForm from './components/LoginForm'
 import BlogView from './components/BlogView'
@@ -26,7 +25,6 @@ const App = () => {
   const [user, setUser] = useState(null)
   const [message, setMessage] = useState(null)
 
-  const blogFormRef = useRef()
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -108,11 +106,12 @@ const App = () => {
         }
       }
 
-      blogFormRef.current.toggleVisibility()
 
       setBlogs(prevBlogs =>
         prevBlogs.concat(blogWithUser)
       )
+
+      navigate('/')
 
       setMessage(
         `a new blog ${returnedBlog.title} by ${returnedBlog.author} added`
@@ -169,6 +168,8 @@ const App = () => {
         blogs.filter(b => b.id !== blog.id)
       )
 
+      navigate('/')
+
       setMessage(
         `blog ${blog.title} removed`
       )
@@ -201,9 +202,9 @@ const App = () => {
 
         {user && (
           <>
-            <span style={{ marginLeft: 10, marginRight: 10 }}>
-              {user.name} logged in
-            </span>
+            <Link to="/create" style={{ marginRight: 10 }}>
+              new blog
+            </Link>
 
             <button onClick={handleLogout}>
               logout
@@ -258,6 +259,19 @@ const App = () => {
         <Route
           path="/blogs/:id"
           element={<BlogPage />}
+        />
+
+        <Route
+          path="/create"
+          element={
+            user ? (
+              <BlogForm createBlog={addBlog} />
+            ) : (
+              <div>
+                <h2>Please log in first</h2>
+              </div>
+            )
+          }
         />
 
       </Routes>
