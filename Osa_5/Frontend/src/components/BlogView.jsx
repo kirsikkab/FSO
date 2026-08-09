@@ -1,3 +1,11 @@
+import {
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Box
+} from '@mui/material'
+
 const BlogView = ({ blog, user, handleLike, handleDelete }) => {
   if (!blog) {
     return <div>blog not found</div>
@@ -9,37 +17,65 @@ const BlogView = ({ blog, user, handleLike, handleDelete }) => {
     blog.user.username === user.username
 
   return (
-    <div>
-      <h2>
-        {blog.title}
-      </h2>
+    <Card sx={{ mt: 3, p: 2, boxShadow: 3 }}>
+      <CardContent>
+        <Typography variant="h4" gutterBottom>
+          {blog.title}
+        </Typography>
 
-      <div>
-        <a href={blog.url}>
-          {blog.url}
-        </a>
-      </div>
+        <Typography
+          variant="h6"
+          color="text.secondary"
+          gutterBottom
+        >
+          by {blog.author}
+        </Typography>
 
-      <div>
-        likes {blog.likes}
+        <Typography sx={{ mt: 2 }}>
+          <a href={blog.url} target="_blank" rel="noreferrer">
+            {blog.url}
+          </a>
+        </Typography>
 
-        {user && (
-          <button onClick={() => handleLike(blog)}>
-            like
-          </button>
-        )}
-      </div>
+        <Typography sx={{ mt: 2 }}>
+          Added by {blog.user?.name || blog.author}
+        </Typography>
 
-      <div>
-        Added by {blog.author}
-      </div>
+        <Box
+          sx={{
+            mt: 3,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2
+          }}
+        >
+          <Typography>
+            {blog.likes} likes
+          </Typography>
 
-      {canDelete && (
-        <button onClick={() => handleDelete(blog)}>
-          remove
-        </button>
-      )}
-    </div>
+          {user && (
+            <Button
+              variant="contained"
+              size="small"
+              onClick={() => handleLike(blog)}
+            >
+              LIKE
+            </Button>
+          )}
+
+          {canDelete && (
+            <Button
+              variant="outlined"
+              color="error"
+              size="small"
+              onClick={() => handleDelete(blog)}
+            >
+              REMOVE
+            </Button>
+          )}
+        </Box>
+      </CardContent>
+    </Card>
   )
 }
 
