@@ -6,7 +6,14 @@ import Notification from './components/Notification'
 import BlogForm from './components/BlogForm'
 import LoginForm from './components/LoginForm'
 import BlogView from './components/BlogView'
-import { Container } from '@mui/material'
+
+import {
+  Container,
+  AppBar,
+  Toolbar,
+  Button,
+  Typography
+} from '@mui/material'
 
 import {
   Routes,
@@ -20,6 +27,13 @@ import {
 
 const App = () => {
   const navigate = useNavigate()
+
+  const buttonStyle = {
+    '&:hover': {
+      bgcolor: 'rgba(255,255,255,0.2)'
+    }
+  }
+
   const [blogs, setBlogs] = useState([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -80,7 +94,10 @@ const App = () => {
       navigate('/')
 
     } catch {
-      setMessage('wrong username or password')
+      setMessage({
+        text: 'wrong username or password',
+        type: 'error'
+      })
 
       setTimeout(() => {
         setMessage(null)
@@ -114,16 +131,20 @@ const App = () => {
 
       navigate('/')
 
-      setMessage(
-        `a new blog ${returnedBlog.title} by ${returnedBlog.author} added`
-      )
+      setMessage({
+        text: `a new blog ${returnedBlog.title} by ${returnedBlog.author} added`,
+        type: 'success'
+      })
 
       setTimeout(() => {
         setMessage(null)
       }, 5000)
 
     } catch {
-      setMessage('error creating blog')
+      setMessage({
+        text: 'error creating blog',
+        type: 'error'
+      })
 
       setTimeout(() => {
         setMessage(null)
@@ -171,16 +192,20 @@ const App = () => {
 
       navigate('/')
 
-      setMessage(
-        `blog ${blog.title} removed`
-      )
+      setMessage({
+        text: `blog ${blog.title} removed`,
+        type: 'success'
+      })
 
       setTimeout(() => {
         setMessage(null)
       }, 5000)
 
     } catch {
-      setMessage('error removing blog')
+      setMessage({
+        text: 'error removing blog',
+        type: 'error'
+      })
 
       setTimeout(() => {
         setMessage(null)
@@ -190,30 +215,54 @@ const App = () => {
 
   return (
     <Container>
-      <div>
-        <div style={{ padding: 10, background: '#eee', marginBottom: 15 }}>
-          <Link to="/" style={{ marginRight: 10 }}>
-            blogs
-          </Link>
+      <AppBar position="static" sx={{ mb: 2 }}>
+        <Toolbar>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            Blog App
+          </Typography>
+
+          <Button
+            color="inherit"
+            component={Link}
+            to="/"
+            sx={buttonStyle}
+          >
+            BLOGS
+          </Button>
 
           {!user && (
-            <Link to="/login">
-              login
-            </Link>
+            <Button
+              color="inherit"
+              component={Link}
+              to="/login"
+              sx={buttonStyle}
+            >
+              LOGIN
+            </Button>
           )}
 
           {user && (
             <>
-              <Link to="/create" style={{ marginRight: 10 }}>
-                new blog
-              </Link>
+              <Button
+                color="inherit"
+                component={Link}
+                to="/create"
+                sx={buttonStyle}
+              >
+                NEW BLOG
+              </Button>
 
-              <button onClick={handleLogout}>
-                logout
-              </button>
+              <Button
+                color="inherit"
+                onClick={handleLogout}
+                sx={buttonStyle}
+              >
+                LOGOUT
+              </Button>
             </>
           )}
-        </div>
+        </Toolbar>
+      </AppBar>
 
         <Notification message={message} />
 
@@ -277,11 +326,8 @@ const App = () => {
           />
 
         </Routes>
-      </div>
     </Container>
   )
-  
-
   
 }
 
