@@ -6,6 +6,7 @@ import Notification from './components/Notification'
 import BlogForm from './components/BlogForm'
 import LoginForm from './components/LoginForm'
 import BlogView from './components/BlogView'
+import { Container } from '@mui/material'
 
 import {
   Routes,
@@ -188,94 +189,96 @@ const App = () => {
   }
 
   return (
-    <div>
-      <div style={{ padding: 10, background: '#eee', marginBottom: 15 }}>
-        <Link to="/" style={{ marginRight: 10 }}>
-          blogs
-        </Link>
-
-        {!user && (
-          <Link to="/login">
-            login
+    <Container>
+      <div>
+        <div style={{ padding: 10, background: '#eee', marginBottom: 15 }}>
+          <Link to="/" style={{ marginRight: 10 }}>
+            blogs
           </Link>
-        )}
 
-        {user && (
-          <>
-            <Link to="/create" style={{ marginRight: 10 }}>
-              new blog
+          {!user && (
+            <Link to="/login">
+              login
             </Link>
+          )}
 
-            <button onClick={handleLogout}>
-              logout
-            </button>
-          </>
-        )}
+          {user && (
+            <>
+              <Link to="/create" style={{ marginRight: 10 }}>
+                new blog
+              </Link>
+
+              <button onClick={handleLogout}>
+                logout
+              </button>
+            </>
+          )}
+        </div>
+
+        <Notification message={message} />
+
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <div>
+                <h2>blogs</h2>
+
+                <ul>
+                  {blogs
+                    .slice()
+                    .sort((a, b) => b.likes - a.likes)
+                    .map(blog =>
+                      <Blog
+                        key={blog.id}
+                        blog={blog}
+                      />
+                    )}
+                </ul>
+              </div>
+            }
+          />
+
+          <Route
+            path="/login"
+            element={
+              user ? (
+                <div>
+                  <h2>Already logged in</h2>
+                </div>
+              ) : (
+                <LoginForm
+                  handleLogin={handleLogin}
+                  username={username}
+                  password={password}
+                  setUsername={setUsername}
+                  setPassword={setPassword}
+                />
+              )
+            }
+          />
+
+          <Route
+            path="/blogs/:id"
+            element={<BlogPage />}
+          />
+
+          <Route
+            path="/create"
+            element={
+              user ? (
+                <BlogForm createBlog={addBlog} />
+              ) : (
+                <div>
+                  <h2>Please log in first</h2>
+                </div>
+              )
+            }
+          />
+
+        </Routes>
       </div>
-
-      <Notification message={message} />
-
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <div>
-              <h2>blogs</h2>
-
-              <ul>
-                {blogs
-                  .slice()
-                  .sort((a, b) => b.likes - a.likes)
-                  .map(blog =>
-                    <Blog
-                      key={blog.id}
-                      blog={blog}
-                    />
-                  )}
-              </ul>
-            </div>
-          }
-        />
-
-        <Route
-          path="/login"
-          element={
-            user ? (
-              <div>
-                <h2>Already logged in</h2>
-              </div>
-            ) : (
-              <LoginForm
-                handleLogin={handleLogin}
-                username={username}
-                password={password}
-                setUsername={setUsername}
-                setPassword={setPassword}
-              />
-            )
-          }
-        />
-
-        <Route
-          path="/blogs/:id"
-          element={<BlogPage />}
-        />
-
-        <Route
-          path="/create"
-          element={
-            user ? (
-              <BlogForm createBlog={addBlog} />
-            ) : (
-              <div>
-                <h2>Please log in first</h2>
-              </div>
-            )
-          }
-        />
-
-      </Routes>
-    </div>
+    </Container>
   )
   
 
